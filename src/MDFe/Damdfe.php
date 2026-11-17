@@ -1025,7 +1025,8 @@ class Damdfe extends DaCommon
                 $altura = $y;
                 for ($i = 0; $i < $valesPedagios; $i++) {
                     $altura += 4;
-                    $texto = $this->valePed->item($i)->getElementsByTagName('nCompra')->item(0)->nodeValue;
+                    // nCompra é opcional (ex.: vale-pedágio por leitura de placa)
+                    $texto = $this->getTagValue($this->valePed->item($i), 'nCompra');
                     $aFont = array('font' => $this->fontePadrao, 'size' => 9, 'style' => '');
                     $this->pdf->textBox($x1, $altura, $x2, 4, $texto, $aFont, 'T', 'L', 0, '', false);
                 }
@@ -1042,14 +1043,18 @@ class Damdfe extends DaCommon
                 $altura = $y;
                 for ($i = 0; $i < $this->seg->length; $i++) {
                     $altura += 4;
-                    $xSeg = $this->seg->item($i)->getElementsByTagName('infSeg')->item(0)->getElementsByTagName('xSeg')->item(0)->nodeValue;
-                    $CNPJ = $this->seg->item($i)->getElementsByTagName('infSeg')->item(0)->getElementsByTagName('CNPJ')->item(0)->nodeValue;
+                    // infSeg e nApol são opcionais no schema
+                    $infSeg = $this->seg->item($i)->getElementsByTagName('infSeg')->item(0);
+                    $xSeg = $this->getTagValue($infSeg, 'xSeg');
+                    $CNPJ = $this->getTagValue($infSeg, 'CNPJ');
                     $aFont = array('font' => $this->fontePadrao, 'size' => 9, 'style' => '');
-                    $this->pdf->textBox($x1, $altura, 95, 4, "{$CNPJ} {$xSeg}", $aFont, 'T', 'L', 0, '', false);
+                    $this->pdf->textBox($x1, $altura, 95, 4, trim("{$CNPJ} {$xSeg}"), $aFont, 'T', 'L', 0, '', false);
 
                     $altura += 4;
-                    $texto = $this->seg->item($i)->getElementsByTagName('nApol')->item(0)->nodeValue;
-                    $this->pdf->textBox($x1, $altura, 95, 4, "Número da apólice: {$texto}", $aFont, 'T', 'L', 0, '', false);
+                    $texto = $this->getTagValue($this->seg->item($i), 'nApol');
+                    if ($texto !== '') {
+                        $this->pdf->textBox($x1, $altura, 95, 4, "Número da apólice: {$texto}", $aFont, 'T', 'L', 0, '', false);
+                    }
                 }
             }
             $this->condutor = $this->veicTracao->getElementsByTagName('condutor');
